@@ -27,6 +27,9 @@ class Libvirt(Plugin):
         group.add_setting('libvirt', metavar='URI', help='Add VM to given URI')
         group.add_setting('bridge', metavar="BRIDGE", help='Set up bridged network connected to BRIDGE.')
         group.add_setting('network', metavar='NETWORK', default='default', help='Set up a network connection to virtual network NETWORK.')
+        group.add_setting('kernel', metavar='FILENAME', help='Boot directly local kernel file - see also initrd and kernelargs opts')
+        group.add_setting('kernelopts', metavar='ARGS', help='kernel options, used only when kernel option is specified')
+        group.add_setting('initrd', metavar='FILENAME', help='initrd image path for local boot - see also kernel option')
 
     def all_domains(self):
         # This does not seem to work when any domain is already running
@@ -72,7 +75,10 @@ class Libvirt(Plugin):
                       'disks' : self.context.disks,
                       'filesystems' : self.context.filesystems,
                       'hostname' : hostname,
-                      'domain_type' : self.context.libvirt_domain_type_name() }
+                      'domain_type' : self.context.libvirt_domain_type_name(),
+                      'kernel': self.context.get_setting('kernel'),
+                      'kernelopts': self.context.get_setting('kernelopts'),
+                      'initrd': self.context.get_setting('initrd') }
         if self.context.preferred_storage == VMBuilder.hypervisor.STORAGE_FS_IMAGE:
             vmxml = VMBuilder.util.render_template('libvirt', self.context, 'libvirtxml_fsimage', tmpl_ctxt)
         else:

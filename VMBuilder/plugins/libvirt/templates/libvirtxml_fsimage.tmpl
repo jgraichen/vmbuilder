@@ -5,6 +5,15 @@
   <os>
     <type>hvm</type>
     <boot dev='hd'/>
+#if $kernel
+    <kernel>$kernel</kernel>
+#if $kernelopts
+    <cmdline>$kernelopts</cmdline>
+#end if
+#if $initrd
+    <initrd>$initrd</initrd>
+#end if
+#end if
   </os>
   <features>
     <acpi/>
