@@ -37,7 +37,11 @@
       <driver name='qemu' type='$disk.format_type' />
 #end if
       <source file='$disk.filename' />
+#if $virtio_disk
+      <target dev='vd$disk.devletters()' bus='virtio' />
+#else
       <target dev='hd$disk.devletters()' />
+#end if
     </disk>
 #end for
   </devices>

@@ -121,6 +121,7 @@ class Ubuntu(Distro):
                 self.vm.components = self.vm.components.split(',')
 
         self.context.virtio_net = self.use_virtio_net()
+        self.context.virtio_disk = self.use_virtio_disk()
 
         # check if the seedfile exists if one is to be used
         seedfile = self.context.get_setting('seedfile')
@@ -179,6 +180,9 @@ class Ubuntu(Distro):
 
     def use_virtio_net(self):
         return self.suite.virtio_net
+
+    def use_virtio_disk(self):
+        return self.suite.virtio_disk
 
     def install_bootloader_cleanup(self, chroot_dir):
         self.context.cancel_cleanup(self.install_bootloader_cleanup)

@@ -35,6 +35,7 @@ class Dapper(suite.Suite):
     disk_prefix = 'hd'
     xen_kernel_flavour = None
     virtio_net = False
+    virtio_disk = False
     chpasswd_cmd = [ 'chpasswd', '--md5' ]
     preferred_filesystem = 'ext3'
 

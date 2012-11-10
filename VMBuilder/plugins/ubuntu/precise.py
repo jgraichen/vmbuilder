@@ -20,4 +20,5 @@ import time
 from VMBuilder.plugins.ubuntu.oneiric import Oneiric
 
 class Precise(Oneiric):
-    pass
+    virtio_disk = True
+    disk_prefix = 'vd'
