@@ -69,7 +69,7 @@ def run_cmd(*argv, **kwargs):
     @param stdin: input to provide to the process on stdin. If None, process'
                   stdin will be attached to /dev/null
     @type  ignore_fail: boolean
-    @param ignore_fail: If True, a non-zero exit code from the command will not 
+    @param ignore_fail: If True, a non-zero exit code from the command will not
                         cause an exception to be raised.
     @type  env: dict
     @param env: Dictionary of extra environment variables to set in the new process
@@ -137,7 +137,7 @@ def render_template(plugin, context, tmplname, extra_context=None):
     searchList.append(context)
 
 #        tmpldirs.insert(0,'%s/%%s' % vm.templates)
-    
+
     tmpldirs = [dir % plugin for dir in context.template_dirs]
 
     for dir in tmpldirs:

@@ -88,7 +88,7 @@ class Dapper(suite.Suite):
             os.mkdir('%s/home/%s/.ssh' % (self.context.chroot_dir, user), 0700)
             shutil.copy(ssh_user_key, '%s/home/%s/.ssh/authorized_keys' % (self.context.chroot_dir, user))
             os.chmod('%s/home/%s/.ssh/authorized_keys' % (self.context.chroot_dir, user), 0644)
-            self.run_in_target('chown', '-R', '%s:%s' % ((user,)*2), '/home/%s/.ssh/' % (user)) 
+            self.run_in_target('chown', '-R', '%s:%s' % ((user,)*2), '/home/%s/.ssh/' % (user))
 
         if ssh_user_key or ssh_key:
             addpkg = self.context.get_setting('addpkg')
@@ -162,7 +162,7 @@ class Dapper(suite.Suite):
         hostname = self.context.get_setting('hostname')
         domain = self.context.get_setting('domain')
         self.context.install_file('/etc/hostname', hostname)
-        self.install_from_template('/etc/hosts', 'etc_hosts', { 'hostname' : hostname, 'domain' : domain }) 
+        self.install_from_template('/etc/hosts', 'etc_hosts', { 'hostname' : hostname, 'domain' : domain })
 
     def config_interfaces(self, nics):
         self.install_from_template('/etc/network/interfaces', 'interfaces',
@@ -271,7 +271,7 @@ class Dapper(suite.Suite):
         if proxy:
             kwargs['env']['http_proxy'] = proxy
         run_cmd(*cmd, **kwargs)
-    
+
     def debootstrap_mirror(self):
         iso = self.context.get_setting('iso')
         if iso:
@@ -310,7 +310,7 @@ class Dapper(suite.Suite):
         self.install_from_template('/etc/kernel-img.conf', 'kernelimg', { 'updategrub' : self.updategrub })
         arch = self.context.get_setting('arch')
         self.run_in_target('apt-get', '--force-yes', '-y', 'install', 'grub', env={ 'DEBIAN_FRONTEND' : 'noninteractive' })
-        run_cmd('rsync', '-a', '%s%s/%s/' % (chroot_dir, self.grubroot, arch == 'amd64' and 'x86_64-pc' or 'i386-pc'), '%s/boot/grub/' % chroot_dir) 
+        run_cmd('rsync', '-a', '%s%s/%s/' % (chroot_dir, self.grubroot, arch == 'amd64' and 'x86_64-pc' or 'i386-pc'), '%s/boot/grub/' % chroot_dir)
 
     def create_devices(self):
         pass

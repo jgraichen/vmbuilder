@@ -1,7 +1,7 @@
 #
 #    Uncomplicated VM Builder
 #    Copyright (C) 2007-2009 Canonical Ltd.
-#    
+#
 #    See AUTHORS for list of contributors
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -37,7 +37,7 @@ class Context(VMBuilder.plugins.Plugin):
                               '/etc/vmbuilder/%s']
         self.overwrite = False
 
-    # Cleanup 
+    # Cleanup
     def cleanup(self):
         logging.info("Cleaning up")
         while len(self._cleanup_cbs) > 0:
@@ -75,19 +75,19 @@ class Distro(Context):
         super(Distro, self).__init__()
 
     def set_chroot_dir(self, chroot_dir):
-        self.chroot_dir = chroot_dir 
+        self.chroot_dir = chroot_dir
 
     def build_chroot(self):
         self.call_hooks('preflight_check')
         self.call_hooks('set_defaults')
         self.call_hooks('bootstrap')
         self.call_hooks('configure_os')
-	self.cleanup()
-        
+        self.cleanup()
+
     def has_xen_support(self):
         """Install the distro into destdir"""
         raise NotImplemented('Distro subclasses need to implement the has_xen_support method')
-    
+
     def install(self, destdir):
         """Install the distro into destdir"""
         raise NotImplemented('Distro subclasses need to implement the install method')

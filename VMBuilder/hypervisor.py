@@ -1,7 +1,7 @@
 #
 #    Uncomplicated VM Builder
 #    Copyright (C) 2007-2009 Canonical Ltd.
-#    
+#
 #    See AUTHORS for list of contributors
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -74,7 +74,7 @@ class Hypervisor(VMBuilder.distro.Context):
         os.rmdir(self.chroot_dir)
 
     def finalise(self, destdir):
-        self.call_hooks('convert', 
+        self.call_hooks('convert',
                         self.preferred_storage == STORAGE_DISK_IMAGE and self.disks or self.filesystems,
                         destdir)
         self.call_hooks('deploy', destdir)

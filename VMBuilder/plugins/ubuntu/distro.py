@@ -28,7 +28,7 @@ from   VMBuilder.exception import VMBuilderUserError, VMBuilderException
 class Ubuntu(Distro):
     name = 'Ubuntu'
     arg = 'ubuntu'
-    suites = ['dapper', 'gutsy', 'hardy', 'intrepid', 'jaunty', 
+    suites = ['dapper', 'gutsy', 'hardy', 'intrepid', 'jaunty',
               'karmic', 'lucid', 'maverick', 'natty', 'oneiric',
               'precise', 'quantal', 'raring', 'saucy', 'trusty',
               'utopic', 'vivid', 'wily', 'xenial',
@@ -99,15 +99,15 @@ class Ubuntu(Distro):
         lead to failure, and since we can check them before we start setting up disk
         and whatnot, we might as well go ahead an do this now."""
 
-        suite = self.get_setting('suite') 
+        suite = self.get_setting('suite')
         if not suite in self.suites:
             raise VMBuilderUserError('Invalid suite: "%s". Valid suites are: %s' % (suite, ' '.join(self.suites)))
-        
+
         modname = 'VMBuilder.plugins.ubuntu.%s' % (suite, )
         mod = __import__(modname, fromlist=[suite])
         self.suite = getattr(mod, suite.capitalize())(self)
 
-        arch = self.get_setting('arch') 
+        arch = self.get_setting('arch')
         if arch not in self.valid_archs[self.host_arch] or  \
             not self.suite.check_arch_validity(arch):
             raise VMBuilderUserError('%s is not a valid architecture. Valid architectures are: %s' % (arch,
@@ -215,7 +215,7 @@ class Ubuntu(Distro):
         self.suite.install_grub(chroot_dir)
         self.run_in_target('grub', '--device-map=%s' % devmapfile, '--batch',  stdin='''root %s
 setup (hd0)
-EOT''' % root_dev) 
+EOT''' % root_dev)
         self.suite.install_menu_lst(disks)
         self.install_bootloader_cleanup(chroot_dir)
 

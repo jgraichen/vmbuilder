@@ -26,7 +26,7 @@ import re
 import stat
 import string
 import time
-from   VMBuilder.util      import run_cmd 
+from   VMBuilder.util      import run_cmd
 from   VMBuilder.exception import VMBuilderUserError, VMBuilderException
 from   struct              import unpack
 
@@ -50,7 +50,7 @@ class Disk(object):
         L{VMBuilderUserError} will be raised. Otherwise, a disk image of
         this size will be created once L{create}() is called.
     """
-    
+
     def __init__(self, vm, filename, size=None):
         self.vm = vm
         "The hypervisor to which the disk belongs."
@@ -112,7 +112,7 @@ class Disk(object):
         logging.info('Adding partition table to disk image: %s' % self.filename)
         run_cmd('parted', '--script', self.filename, 'mklabel', 'msdos')
 
-        # Partition the disk 
+        # Partition the disk
         for part in self.partitions:
             part.create(self)
 
@@ -205,7 +205,7 @@ class Disk(object):
 
         @type  begin: number
         @param begin: Start offset of the new partition (in megabytes)
-        @type  length: 
+        @type  length:
         @param length: Size of the new partition (in megabytes)
         @type  type: string
         @param type: Type of the new partition. Valid options are: ext2 ext3 xfs swap linux-swap
@@ -294,11 +294,11 @@ class Disk(object):
         def create(self, disk):
             """Adds partition to the disk image (does not mkfs or anything like that)"""
             logging.info('Adding type %d partition to disk image: %s' % (self.type, disk.filename))
-	    if self.begin == 0:
-		logging.info('Partition at beginning of disk - reserving first cylinder')
-		partition_start = "63s"
-	    else:
-	    	partition_start = self.begin
+            if self.begin == 0:
+                logging.info('Partition at beginning of disk - reserving first cylinder')
+                partition_start = "63s"
+            else:
+                partition_start = self.begin
             run_cmd('parted', '--script', '--', disk.filename, 'mkpart', 'primary', self.parted_fstype(), partition_start, self.end)
 
         def mkfs(self):
@@ -310,7 +310,7 @@ class Disk(object):
             return '(hd%d,%d)' % (self.disk.get_index(), self.get_index())
 
         def get_suffix(self):
-            """Returns 'a4' for a device that would be called /dev/sda4 in the guest. 
+            """Returns 'a4' for a device that would be called /dev/sda4 in the guest.
                This allows other parts of VMBuilder to set the prefix to something suitable."""
             return '%s%d' % (self.disk.devletters(), self.get_index() + 1)
 
@@ -395,7 +395,7 @@ class Filesystem(object):
 
     def mount(self, rootmnt):
         if (self.type != TYPE_SWAP) and not self.dummy:
-            logging.debug('Mounting %s', self.mntpnt) 
+            logging.debug('Mounting %s', self.mntpnt)
             self.mntpath = '%s%s' % (rootmnt, self.mntpnt)
             if not os.path.exists(self.mntpath):
                 os.makedirs(self.mntpath)
@@ -405,7 +405,7 @@ class Filesystem(object):
     def umount(self):
         self.vm.cancel_cleanup(self.umount)
         if (self.type != TYPE_SWAP) and not self.dummy:
-            logging.debug('Unmounting %s', self.mntpath) 
+            logging.debug('Unmounting %s', self.mntpath)
             run_cmd('umount', self.mntpath)
 
     def get_suffix(self):
@@ -423,7 +423,7 @@ class Filesystem(object):
                  the VM. E.g. the first filesystem of a VM would return 'a', while the 702nd would return 'zz'
         """
         return self.devletter
-        
+
     def get_index(self):
         """Index of the disk (starting from 0)"""
         return self.vm.filesystems.index(self)
@@ -468,7 +468,7 @@ def str_to_type(type):
         return str_to_type_map[type]
     except KeyError:
         raise Exception('Unknown partition type: %s' % type)
-        
+
 def rootpart(disks):
     """Returns the partition which contains the root dir"""
     return path_to_partition(disks, '/')
@@ -516,7 +516,7 @@ def devname_to_index(devname):
 def devname_to_index_rec(devname):
     if not devname:
         return 0
-    return 26 * devname_to_index_rec(devname[:-1]) + (string.ascii_lowercase.index(devname[-1]) + 1) 
+    return 26 * devname_to_index_rec(devname[:-1]) + (string.ascii_lowercase.index(devname[-1]) + 1)
 
 def index_to_devname(index, suffix=''):
     if index < 0:
@@ -527,7 +527,7 @@ def detect_size(filename):
     st = os.stat(filename)
     if stat.S_ISREG(st.st_mode):
         return st.st_size / 1024*1024
-    elif stat.S_ISBLK(st.st_mode): 
+    elif stat.S_ISBLK(st.st_mode):
         # I really wish someone would make these available in Python
         BLKGETSIZE64 = 2148012658
         fp = open(filename, 'r')
