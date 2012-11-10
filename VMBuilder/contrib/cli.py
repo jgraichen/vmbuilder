@@ -143,7 +143,10 @@ class CLI(object):
                                    "virtual disks, a new disk starts on a "
                                    "line containing only '---'. ie: \n    root "
                                    "2000 \n    /boot 512 \n    swap 1000 \n    "
-                                   "--- \n    /var 8000 \n    /var/log 2000"))
+                                   "--- \n    /var 8000 \n    /var/log 2000"
+                                   "Insert \"diskpartition\" line as partition "
+                                   "to adisk to use this disk as one partition "
+                                   "and don't create partition table and MBR"))
             optparser.add_option_group(group)
 
             optparser.disable_interspersed_args()
@@ -406,36 +409,43 @@ class CLI(object):
                     curdisk = list()
                     size = 0
                     disk_idx = 0
+                    diskpartition = False
                     for line in file(self.options.part):
+                        if line.strip() == 'diskpartition':
+                            diskpartitions = True
+                            continue
                         pair = line.strip().split(' ',1)
                         if pair[0] == '---':
-                            self.do_disk(hypervisor, curdisk, size, disk_idx)
+                            self.do_disk(hypervisor, curdisk, size, disk_idx, diskpartition)
                             curdisk = list()
                             size = 0
                             disk_idx += 1
+                            diskpartitions = False
                         elif pair[0] != '':
                             logging.debug("part: %s, size: %d" % (pair[0],
                                           int(pair[1])))
                             curdisk.append((pair[0], pair[1]))
                             size += int(pair[1])
 
-                    self.do_disk(hypervisor, curdisk, size, disk_idx)
+                    self.do_disk(hypervisor, curdisk, size, disk_idx, diskpartition)
 
                 except IOError, (errno, strerror):
                     optparser.error("%s parsing --part option: %s" %
                                     (errno, strerror))
 
-    def do_disk(self, hypervisor, curdisk, size, disk_idx):
+    def do_disk(self, hypervisor, curdisk, size, disk_idx, diskpartition=False):
         default_filesystem = hypervisor.distro.preferred_filesystem()
 
         if self.options.raw:
-            disk = hypervisor.add_disk(filename=self.options.raw[disk_idx])
+            disk = hypervisor.add_disk(diskpartition=diskpartition, filename=self.options.raw[disk_idx])
         else:
             disk = hypervisor.add_disk(
                 util.tmp_filename(tmp_root=self.options.tmp_root),
                 size+1)
 
         logging.debug("do_disk #%i - size: %d" % (disk_idx, size))
+        if diskpartition and len(curdisk) > 1:
+                raise VMBuilderUserError('Only one partition is supported on diskpartitions, since there is no partition table!')
         offset = 0
         for pair in curdisk:
             logging.debug("do_disk #%i - part: %s, size: %s, offset: %d" %

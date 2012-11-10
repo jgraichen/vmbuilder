@@ -327,6 +327,24 @@ class Disk(object):
             except ValueError:
                 self.type = str_to_type(type)
 
+class DiskPartition(Disk):
+    def map_partitions(self):
+        if len(self.partitions) > 0:
+            self.partitions[0].set_filename(self.filename)
+
+    def unmap(self, ignore_fail=False):
+        pass
+
+    def partition(self):
+        pass
+
+    class Partition(Disk.Partition):
+        def get_suffix(self):
+            return self.disk.devletters()
+
+        def create(self, disk):
+            pass
+
 class Filesystem(object):
     def __init__(self, vm=None, size=0, type=None, mntpnt=None, filename=None, devletter='a', device='', dummy=False):
         self.vm = vm
