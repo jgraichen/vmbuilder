@@ -32,6 +32,7 @@ class Context(VMBuilder.plugins.Plugin):
         self.plugins.sort(key=lambda x:x.priority)
         self._cleanup_cbs = []
         self.hooks = {}
+        self.skipped_hooks = []
         self.template_dirs = [os.path.expanduser('~/.vmbuilder/%s'),
                               os.path.dirname(__file__) + '/plugins/%s/templates',
                               '/etc/vmbuilder/%s']
@@ -62,12 +63,15 @@ class Context(VMBuilder.plugins.Plugin):
     def register_hook(self, hook_name, func):
         self.hooks[hook_name] = self.hooks.get(hook_name, []) + [func]
 
-    def call_hooks(self, *args, **kwargs):
+    def call_hooks(self, name, *args, **kwargs):
         try:
-            call_hooks(self, *args, **kwargs)
+            call_hooks(self, name, *args, skipped_hock=name in self.skipped_hooks, **kwargs)
         except Exception:
             self.cleanup()
             raise
+
+    def set_skipped_hooks(self, hooks):
+        self.skipped_hooks = hooks
 
 class Distro(Context):
     def __init__(self):

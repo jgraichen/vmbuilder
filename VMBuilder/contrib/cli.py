@@ -96,6 +96,17 @@ class CLI(object):
                              help=('Use a tmpfs as the working directory, '
                                    'specifying its size or "-" to use tmpfs '
                                    'default (suid,dev,size=1G).'))
+            group.add_option('--skip-hook',
+                             metavar="HOOK",
+                             type='str',
+                             action='append',
+                             dest='skipped_hooks',
+                             default=[],
+                             help=('Skip calling this hook. Use this only if you '
+                                   'know what you are doing. Disabling hooks will'
+                                   'mostly result in an unstable or not bootable'
+                                   'system. Can be specified multiple times to'
+                                   'disable multiple hooks'))
             optparser.add_option_group(group)
 
             group = optparse.OptionGroup(optparser, 'Disk')
@@ -152,6 +163,9 @@ class CLI(object):
 
             if os.geteuid() != 0:
                 raise VMBuilderUserError('Must run as root')
+
+            hypervisor.set_skipped_hooks(self.options.skipped_hooks)
+            distro.set_skipped_hooks(self.options.skipped_hooks)
 
             logging.debug("Launch directory: {}".format(os.getcwd()))
 
