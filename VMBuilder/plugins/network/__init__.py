@@ -39,7 +39,7 @@ def numeric_to_dotted_ip(numeric_ip):
 
 def dotted_to_numeric_ip(dotted_ip):
     try:
-        return struct.unpack('I', socket.inet_aton(dotted_ip))[0] 
+        return struct.unpack('I', socket.inet_aton(dotted_ip))[0]
     except socket.error:
         raise VMBuilderUserError('%s is not a valid ip address' % dotted_ip)
 
@@ -86,6 +86,9 @@ class NetworkHypervisorPlugin(Plugin):
         group.add_setting('gw', metavar='ADDRESS', help='Gateway (router) address in dotted form [default: based on ip setting (first valid address in the network)]. Ignored if ip is not specified.')
         group.add_setting('dns', metavar='ADDRESS', help='DNS address in dotted form [default: based on ip setting (first valid address in the network)] Ignored if ip is not specified.')
 
+        group.add_setting('ip6', metavar='ADDRESS', default='none', help='IP6 address with prefix length, dhcp or none [default: %default].')
+        group.add_setting('gw6', metavar='ADDRESS', help='Gateway (router) address. Ignored if ip6 is not specified.')
+
 
     def preflight_check(self):
         """
@@ -94,7 +97,7 @@ class NetworkHypervisorPlugin(Plugin):
 
         ip = self.context.get_setting('ip')
         logging.debug("ip: %s" % ip)
-        
+
         mac = self.context.get_setting('mac')
         if mac:
             if not validate_mac(mac):
@@ -103,7 +106,7 @@ class NetworkHypervisorPlugin(Plugin):
         if ip != 'dhcp':
             # num* are numeric representations
             numip = dotted_to_numeric_ip(ip)
-            
+
             mask = self.context.get_setting('mask')
             if not mask:
                 nummask = guess_mask_from_ip(numip)
@@ -138,10 +141,16 @@ class NetworkHypervisorPlugin(Plugin):
             logging.debug("gateway: %s" % self.context.get_setting('gw'))
             logging.debug("dns: %s" % self.context.get_setting('dns'))
 
+        ip6 = self.context.get_setting('ip6')
+        logging.debug("ip6: %s" % ip6)
+        if ip6 not in ['none', 'dhcp']:
+            logging.debug("gateway6: %s" % self.context.get_setting('gw6'))
+
+
     def configure_networking(self, nics):
         if len(nics) > 0:
             nic = nics[0]
-        
+
         ip = self.get_setting('ip')
         if ip == 'dhcp':
             nic.type = 'dhcp'
@@ -153,6 +162,19 @@ class NetworkHypervisorPlugin(Plugin):
             nic.broadcast = self.context.get_setting('bcast')
             nic.gateway = self.context.get_setting('gw')
             nic.dns = self.context.get_setting('dns')
-        
+
+        ip6 = self.get_setting('ip6')
+        if ip6 == 'dhcp':
+            nic.type6 = 'dhcp'
+        elif ip6 is None or ip6 == 'none':
+            nic.type6 = 'none'
+        else:
+            nic.type6 = 'static'
+            nic.ip6 = ip6
+            nic.gateway6 = self.context.get_setting('gw6')
+        logging.debug("type6: %s" % nic.type6)
+        logging.debug("ip6: %s" % nic.ip6)
+        logging.debug("gw6: %s" % nic.gateway6)
+
 register_distro_plugin(NetworkDistroPlugin)
 register_hypervisor_plugin(NetworkHypervisorPlugin)

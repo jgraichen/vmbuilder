@@ -172,6 +172,8 @@ class Dapper(suite.Suite):
                                      'net' : nics[0].network,
                                      'bcast' : nics[0].broadcast,
                                      'gw' : nics[0].gateway,
+                                     'ip6' : nics[0].type6 in ['none', 'dhcp'] and nics[0].type6 or nics[0].ip6,
+                                     'gw6' : nics[0].gateway6,
                                      'dns' : nics[0].dns,
                                      'domain' : self.context.get_setting('domain') })
 

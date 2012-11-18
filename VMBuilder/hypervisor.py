@@ -117,7 +117,8 @@ class Hypervisor(VMBuilder.distro.Context):
 
     class NIC(object):
         def __init__(self, type='dhcp', ip=None, network=None, netmask=None,
-                           broadcast=None, dns=None, gateway=None):
+                           broadcast=None, dns=None, gateway=None,
+                           type6='none', ip6=None, gateway6=None):
             self.type = type
             self.ip = ip
             self.network = network
@@ -126,3 +127,6 @@ class Hypervisor(VMBuilder.distro.Context):
             self.dns = dns
             self.gateway = gateway
 
+            self.type6 = type6
+            self.ip6 = ip6
+            self.gateway6 = gateway6

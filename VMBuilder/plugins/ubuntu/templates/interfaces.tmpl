@@ -12,11 +12,21 @@ iface eth0 inet dhcp
 #else
 iface eth0 inet static
         address $ip
-        netmask $mask 
+        netmask $mask
         network $net
         broadcast $bcast
-        gateway $gw 
+        gateway $gw
         # dns-* options are implemented by the resolvconf package, if installed
         dns-nameservers $dns
         dns-search $domain
+#end if
+#if $ip6 != 'none'
+
+#if $ip6 == 'dhcp'
+iface eth0 inet dhcp
+#else
+iface eth0 inet6 static
+        address $ip6
+        gateway $gw6
+#end if
 #end if
