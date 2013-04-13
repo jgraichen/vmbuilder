@@ -20,8 +20,10 @@ from VMBuilder import register_distro_plugin, Plugin
 
 import logging
 import os
-import urllib
+import urllib2
+import shutil
 import json
+
 
 class Chef(Plugin):
     """
@@ -29,9 +31,11 @@ class Chef(Plugin):
     """
     name = 'chef plugin'
 
+    arch_mapping = { 'amd64' : 'x86_64', 'i386' :'i686' }
+
     def register_options(self):
         group = self.setting_group('Chef')
-        group.add_setting('install-chef', type='bool', default=False, help='Install chef-client on vm (via opscode-ppa)')
+        group.add_setting('install-chef', type='bool', default=False, help='Install chef-client on vm (via opscode package)')
         group.add_setting('chef-server-url', metavar='URL', help='URL to chef server')
         group.add_setting('validation-file', metavar='FILE', help='Path to validation.pem to register new chef node')
         group.add_setting('environment', metavar='ENV', help='Predefine chef node environment')
@@ -43,14 +47,23 @@ class Chef(Plugin):
         if not self.context.get_setting('install-chef'):
             return
 
+        # downloading chef
+        logging.info('Downloading chef')
+        suiteStartPos = ord(self.context.get_setting('suite')[0])
+        if self.context.get_setting('proxy'):
+            opener = urllib2.build_opener(urllib2.ProxyHandler({'http': self.context.get_setting('proxy')}))
+        else:
+            opener = urllib2.build_opener()
+        f = opener.open('http://www.opscode.com/chef/download?m={arch}&p={platform}&pv={version}'.format(
+            arch=self.arch_mapping[self.context.get_setting('arch')],
+            platform='ubuntu',
+            version=str(suiteStartPos / 2 - 44) + '.' + ('04' if ( suiteStartPos % 2 == 0 ) else '10' )))
+        with open(self.context.chroot_dir + '/tmp/chef.deb', 'wb') as fp:
+            shutil.copyfileobj(f, fp)
+
         # install chef
-        self.install_from_template('/etc/apt/sources.list.d/opscode.list', 'opscode-source', { 'suite': self.context.get_setting('suite') })
-        self.context.suite.run_in_target('apt-key', 'add', '-', stdin=urllib.urlopen('http://apt.opscode.com/packages@opscode.com.gpg.key').read())
-        self.context.suite.run_in_target('apt-get', 'update')
-        self.context.suite.prevent_daemons_starting()
-        self.context.suite.run_in_target('debconf-set-selections', stdin='chef chef/chef_server_url string ' + self.context.get_setting('chef-server-url'), env={ 'DEBIAN_FRONTEND' : 'noninteractive' })
-        self.context.suite.run_in_target('apt-get', '--force-yes', '-y', 'install', 'chef', 'opscode-keyring', env={ 'DEBIAN_FRONTEND' : 'noninteractive' })
-        self.context.suite.unprevent_daemons_starting()
+        logging.info('Installing chef')
+        self.context.suite.run_in_target('dpkg', '-i', '/tmp/chef.deb')
 
         # configure chef
         self.context.install_file('/etc/chef/validation.pem', source=self.context.get_setting('validation-file'), mode=0700)
@@ -60,12 +73,12 @@ class Chef(Plugin):
         })
 
         # prepare first/auto start of chef-client
-        self.context.suite.run_in_target('update-rc.d', '-f', 'chef-client', 'remove')
         options = self._parse_options(self.context.get_setting('attribute'))
         options['run_list'] = self.context.get_setting('run-item')
         self.install_file('/etc/chef/first-boot.json', contents=json.dumps(options))
         self.install_from_template('/etc/init/chef-setup.conf', 'first-start.conf',
             { 'environment': self.context.get_setting('environment') }, mode=0755)
+        logging.info('Chef configured')
 
     @staticmethod
     def _parse_options(lines):
