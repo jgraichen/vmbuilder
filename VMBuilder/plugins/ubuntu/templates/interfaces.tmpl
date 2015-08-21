@@ -11,10 +11,7 @@ auto eth0
 iface eth0 inet dhcp
 #else
 iface eth0 inet static
-        address $ip
-        netmask $mask
-        network $net
-        broadcast $bcast
+        address $ip/24
         gateway $gw
         # dns-* options are implemented by the resolvconf package, if installed
         dns-nameservers $dns
