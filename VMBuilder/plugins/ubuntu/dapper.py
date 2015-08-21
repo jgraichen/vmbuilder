@@ -238,14 +238,12 @@ class Dapper(suite.Suite):
                                                                               'ppa' : ppa,
                                                                               'suite' : suite })
 
-        for repo in self.context.get_setting('extra-repos'):
-            name, url = repo.split(':', 1)
-            content = "deb {url} {suite} main\n".format(url=url, suite=suite)
-            self.install_file("/etc/apt/sources.list.d/{}.list".format(name), contents=content)
+        name, url = self.context.get_setting('extra-repos').split(':', 1)
+        content = "deb {url} {suite} main\n".format(url=url, suite=suite)
+        self.context.install_file("/etc/apt/sources.list.d/{}.list".format(name), contents=content)
 
-        for key in self.context.get_setting('extra-aptkeys'):
-            content = open(key).read()
-            self.run_in_target('apt-key', 'add', '-', stdin=content)
+        content = open(self.context.get_setting('extra-aptkeys'), 'r').read()
+        self.run_in_target('apt-key', 'add', '-', stdin=content)
 
         # If setting up the final mirror, allow apt-get update to fail
         # (since we might be on a complete different network than the

@@ -65,8 +65,8 @@ class Ubuntu(Distro):
         group.add_setting('install-security-mirror', metavar='URL', help='Use the security mirror at URL for installation only. Apt\'s sources.list will still use default or URL set by --security-mirror')
         group.add_setting('components', type='list', metavar='COMPS', help='A comma seperated list of distro components to include (e.g. main,universe).')
         group.add_setting('ppa', metavar='PPA', type='list', help='Add ppa belonging to PPA to the vm\'s sources.list.')
-        group.add_setting('extra-repos', metavar='NAME:URL', type='list', help='Add additional debian repos to vm sources.list.d')
-        group.add_setting('extra-aptkeys', metavar='FILE', type='list', help='Local (host) files that should be import into the apt keyring')
+        group.add_setting('extra-repos', metavar='NAME:URL', help='Add additional debian repos to vm sources.list.d')
+        group.add_setting('extra-aptkeys', metavar='FILE', help='Local (host) files that should be import into the apt keyring')
         group.add_setting('lang', metavar='LANG', default=get_locale(), help='Set the locale to LANG [default: %default]')
         group.add_setting('timezone', metavar='TZ', default='UTC', help='Set the timezone to TZ in the vm. [default: %default]')
 
