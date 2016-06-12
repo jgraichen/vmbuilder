@@ -250,16 +250,8 @@ class Potato(suite.Suite):
         if proxy is not None:
             self.context.install_file('/etc/apt/apt.conf', '// Proxy added by vmbuilder\nAcquire::http { Proxy "%s"; };' % proxy)
 
-    def fstab(self):
-        retval = '''# /etc/fstab: static file system information.
-#
-# <file system>                                 <mount point>   <type>  <options>       <dump>  <pass>
-proc                                            /proc           proc    defaults        0       0
-'''
-        parts = disk.get_ordered_partitions(self.context.disks)
-        for part in parts:
-            retval += "UUID=%-40s %15s %7s %15s %d       %d\n" % (part.fs.uuid, part.fs.mntpnt, part.fs.fstab_fstype(), part.fs.fstab_options(), 0, 0)
-        return retval
+    def install_fstab(self, disks, filesystems):
+        self.install_from_template('/etc/fstab', 'fstab', { 'parts' : disk.get_ordered_partitions(disks) })
 
     def install_device_map(self):
         self.install_from_template('/boot/grub/device.map', 'devicemap', { 'prefix' : self.disk_prefix })
