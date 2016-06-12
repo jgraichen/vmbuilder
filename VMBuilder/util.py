@@ -182,10 +182,10 @@ def call_hooks(context, func, *args, **kwargs):
 def tmp_filename(suffix='', tmp_root=None):
     # There is a risk in using tempfile.mktemp(): it's not recommended
     # to run vmbuilder on machines with untrusted users.
-    return tempfile.mktemp(suffix=suffix, dir=tmp_root)
+    return tempfile.mktemp(suffix=suffix, prefix='vmbuilder-', dir=tmp_root)
 
 def tmpdir(suffix='', tmp_root=None):
-    return tempfile.mkdtemp(suffix=suffix, dir=tmp_root)
+    return tempfile.mkdtemp(suffix=suffix, prefix='vmbuilder-', dir=tmp_root)
 
 def set_up_tmpfs(tmp_root=None, size=1024):
     """Sets up a tmpfs storage under `tmp_root` with the size of `size` MB.
