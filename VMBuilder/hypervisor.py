@@ -47,14 +47,19 @@ class Hypervisor(VMBuilder.distro.Context):
         self.filesystems.append(fs)
         return fs
 
-    def add_disk(self, diskpartition=False, *args, **kwargs):
+    def add_disk(self, *args, **kwargs):
         """Adds a disk image to the virtual machine"""
         from VMBuilder.disk import Disk, DiskPartition
 
-        if diskpartition:
+        diskpartition = False
+        if 'diskpartition' in kwargs:
+            diskpartition = kwargs.diskpartition
+
+        if not diskpartition:
             disk = Disk(self, *args, **kwargs)
         else:
             disk = DiskPartition(self, *args, **kwargs)
+
         self.disks.append(disk)
         return disk
 
