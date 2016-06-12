@@ -64,7 +64,7 @@ class Debian(Distro):
         group.add_setting('timezone', metavar='TZ', default='UTC', help='Set the timezone to TZ in the vm. [default: %default]')
 
         group = self.setting_group('Settings for the initial user')
-        group.add_setting('user', default='debian', help='Username of initial user [default: %default]')
+        group.add_setting('user', default=None, help='Username of initial user [default: %default]')
         group.add_setting('name', default='Debian', help='Full name of initial user [default: %default]')
         group.add_setting('pass', default='debian', help='Password of initial user [default: %default]')
         group.add_setting('rootpass', help='Initial root password (WARNING: this has strong security implications).')
@@ -88,15 +88,15 @@ class Debian(Distro):
         lead to failure, and since we can check them before we start setting up disk
         and whatnot, we might as well go ahead an do this now."""
 
-        suite = self.get_setting('suite') 
+        suite = self.get_setting('suite')
         if not suite in self.suites:
             raise VMBuilderUserError('Invalid suite: "%s". Valid suites are: %s' % (suite, ' '.join(self.suites)))
-        
+
         modname = 'VMBuilder.plugins.debian.%s' % (suite, )
         mod = __import__(modname, fromlist=[suite])
         self.suite = getattr(mod, suite.capitalize())(self)
 
-        arch = self.get_setting('arch') 
+        arch = self.get_setting('arch')
         if arch not in self.valid_archs[self.host_arch] or  \
             not self.suite.check_arch_validity(arch):
             raise VMBuilderUserError('%s is not a valid architecture. Valid architectures are: %s' % (arch,
@@ -204,7 +204,7 @@ class Debian(Distro):
         self.suite.install_grub(chroot_dir)
         self.run_in_target('grub', '--device-map=%s' % devmapfile, '--batch',  stdin='''root %s
 setup (hd0)
-EOT''' % root_dev) 
+EOT''' % root_dev)
         self.suite.install_menu_lst(disks)
         self.install_bootloader_cleanup(chroot_dir)
 

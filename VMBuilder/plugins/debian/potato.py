@@ -83,14 +83,15 @@ class Potato(suite.Suite):
             os.chmod('%s/root/.ssh/authorized_keys' % self.context.chroot_dir, 0644)
 
         user = self.context.get_setting('user')
-        ssh_user_key = self.context.get_setting('ssh-user-key')
-        if ssh_user_key:
-            os.mkdir('%s/home/%s/.ssh' % (self.context.chroot_dir, user), 0700)
-            shutil.copy(ssh_user_key, '%s/home/%s/.ssh/authorized_keys' % (self.context.chroot_dir, user))
-            os.chmod('%s/home/%s/.ssh/authorized_keys' % (self.context.chroot_dir, user), 0644)
-            self.run_in_target('chown', '-R', '%s:%s' % ((user,)*2), '/home/%s/.ssh/' % (user)) 
+        if user:
+            ssh_user_key = self.context.get_setting('ssh-user-key')
+            if ssh_user_key:
+                os.mkdir('%s/home/%s/.ssh' % (self.context.chroot_dir, user), 0700)
+                shutil.copy(ssh_user_key, '%s/home/%s/.ssh/authorized_keys' % (self.context.chroot_dir, user))
+                os.chmod('%s/home/%s/.ssh/authorized_keys' % (self.context.chroot_dir, user), 0644)
+                self.run_in_target('chown', '-R', '%s:%s' % ((user,)*2), '/home/%s/.ssh/' % (user))
 
-        if ssh_user_key or ssh_key:
+        if (user and ssh_user_key) or ssh_key:
             addpkg = self.context.get_setting('addpkg')
             addpkg += ['openssh-server']
             self.context.set_setting('addpkg', addpkg)
@@ -121,7 +122,9 @@ class Potato(suite.Suite):
         # Set the user password, using md5
         user   = self.context.get_setting('user')
         passwd = self.context.get_setting('pass')
-        self.run_in_target(stdin=('%s:%s\n' % (user, passwd)), *self.chpasswd_cmd)
+
+        if user:
+            self.run_in_target(stdin=('%s:%s\n' % (user, passwd)), *self.chpasswd_cmd)
 
         # Lock root account only if we didn't set the root password
         rootpass = self.context.get_setting('rootpass')
@@ -131,7 +134,7 @@ class Potato(suite.Suite):
             self.run_in_target('usermod', '-L', 'root')
 
         lock_user = self.context.get_setting('lock-user')
-        if lock_user:
+        if lock_user and user:
             logging.info('Locking %s' % (user, ))
             self.run_in_target('usermod', '-L', user)
 
@@ -139,17 +142,19 @@ class Potato(suite.Suite):
         uid  = self.context.get_setting('uid')
         name = self.context.get_setting('name')
         user = self.context.get_setting('user')
-        if uid:
-            self.run_in_target('adduser', '--disabled-password', '--uid', uid, '--gecos', name, user)
-        else:
-            self.run_in_target('adduser', '--disabled-password', '--gecos', name, user)
 
-        self.run_in_target('addgroup', '--system', 'admin')
-        self.run_in_target('adduser', user, 'admin')
+        if user:
+            if uid:
+                self.run_in_target('adduser', '--disabled-password', '--uid', uid, '--gecos', name, user)
+            else:
+                self.run_in_target('adduser', '--disabled-password', '--gecos', name, user)
 
-        self.install_from_template('/etc/sudoers', 'sudoers')
-        for group in ['adm', 'audio', 'cdrom', 'dialout', 'floppy', 'video', 'plugdev', 'dip', 'netdev', 'powerdev', 'lpadmin', 'scanner']:
-            self.run_in_target('adduser', user, group, ignore_fail=True)
+            self.run_in_target('addgroup', '--system', 'admin')
+            self.run_in_target('adduser', user, 'admin')
+
+            self.install_from_template('/etc/sudoers', 'sudoers')
+            for group in ['adm', 'audio', 'cdrom', 'dialout', 'floppy', 'video', 'plugdev', 'dip', 'netdev', 'powerdev', 'lpadmin', 'scanner']:
+                self.run_in_target('adduser', user, group, ignore_fail=True)
 
         self.update_passwords()
 
@@ -162,7 +167,7 @@ class Potato(suite.Suite):
         hostname = self.context.get_setting('hostname')
         domain = self.context.get_setting('domain')
         self.context.install_file('/etc/hostname', hostname)
-        self.install_from_template('/etc/hosts', 'etc_hosts', { 'hostname' : hostname, 'domain' : domain }) 
+        self.install_from_template('/etc/hosts', 'etc_hosts', { 'hostname' : hostname, 'domain' : domain })
 
     def config_interfaces(self, nics):
         self.install_from_template('/etc/network/interfaces', 'interfaces',
@@ -279,7 +284,7 @@ proc                                            /proc           proc    defaults
         if proxy:
             kwargs['env']['http_proxy'] = proxy
         run_cmd(*cmd, **kwargs)
-    
+
     def debootstrap_mirror(self):
         iso = self.context.get_setting('iso')
         if iso:
@@ -318,7 +323,7 @@ proc                                            /proc           proc    defaults
         self.install_from_template('/etc/kernel-img.conf', 'kernelimg', { 'updategrub' : self.updategrub })
         arch = self.context.get_setting('arch')
         self.run_in_target('apt-get', '--force-yes', '-y', 'install', 'grub', env={ 'DEBIAN_FRONTEND' : 'noninteractive' })
-        run_cmd('rsync', '-a', '%s%s/%s/' % (chroot_dir, self.grubroot, arch == 'amd64' and 'x86_64-pc' or 'i386-pc'), '%s/boot/grub/' % chroot_dir) 
+        run_cmd('rsync', '-a', '%s%s/%s/' % (chroot_dir, self.grubroot, arch == 'amd64' and 'x86_64-pc' or 'i386-pc'), '%s/boot/grub/' % chroot_dir)
 
     def create_devices(self):
         pass
