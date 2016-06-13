@@ -78,7 +78,7 @@ class Debian(Distro):
         group.add_setting('manifest', metavar='PATH', help='If passed, a manifest will be written to PATH')
 
     def set_defaults(self):
-        self.set_setting_default('mirror', 'http://ftp.debian.org/debian')
+        self.set_setting_default('mirror', 'http://httpredir.debian.org/debian')
         self.set_setting_default('security-mirror', 'http://security.debian.org/debian-security')
 
         self.set_setting_default('components',  ['main'])
