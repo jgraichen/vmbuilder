@@ -71,7 +71,7 @@ class Ubuntu(Distro):
         group.add_setting('timezone', metavar='TZ', default='UTC', help='Set the timezone to TZ in the vm. [default: %default]')
 
         group = self.setting_group('Settings for the initial user')
-        group.add_setting('user', default='ubuntu', help='Username of initial user [default: %default]')
+        group.add_setting('user', default=None, help='Username of initial user [default: %default]')
         group.add_setting('name', default='Ubuntu', help='Full name of initial user [default: %default]')
         group.add_setting('pass', default='ubuntu', help='Password of initial user [default: %default]')
         group.add_setting('rootpass', help='Initial root password (WARNING: this has strong security implications).')

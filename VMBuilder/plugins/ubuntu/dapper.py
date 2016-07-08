@@ -121,38 +121,43 @@ class Dapper(suite.Suite):
     def update_passwords(self):
         # Set the user password, using md5
         user   = self.context.get_setting('user')
-        passwd = self.context.get_setting('pass')
-        self.run_in_target(stdin=('%s:%s\n' % (user, passwd)), *self.chpasswd_cmd)
 
-        # Lock root account only if we didn't set the root password
-        rootpass = self.context.get_setting('rootpass')
-        if rootpass:
-            self.run_in_target(stdin=('%s:%s\n' % ('root', rootpass)), *self.chpasswd_cmd)
-        else:
-            self.run_in_target('usermod', '-L', 'root')
+        if user:
+            passwd = self.context.get_setting('pass')
+            self.run_in_target(stdin=('%s:%s\n' % (user, passwd)), *self.chpasswd_cmd)
 
-        lock_user = self.context.get_setting('lock-user')
-        if lock_user:
-            logging.info('Locking %s' % (user, ))
-            self.run_in_target('usermod', '-L', user)
+            # Lock root account only if we didn't set the root password
+            rootpass = self.context.get_setting('rootpass')
+            if rootpass:
+                self.run_in_target(stdin=('%s:%s\n' % ('root', rootpass)), *self.chpasswd_cmd)
+            else:
+                self.run_in_target('usermod', '-L', 'root')
+
+            lock_user = self.context.get_setting('lock-user')
+            if lock_user:
+                logging.info('Locking %s' % (user, ))
+                self.run_in_target('usermod', '-L', user)
 
     def create_initial_user(self):
-        uid  = self.context.get_setting('uid')
-        name = self.context.get_setting('name')
         user = self.context.get_setting('user')
-        if uid:
-            self.run_in_target('adduser', '--disabled-password', '--uid', uid, '--gecos', name, user)
-        else:
-            self.run_in_target('adduser', '--disabled-password', '--gecos', name, user)
 
-        self.run_in_target('addgroup', '--system', 'admin')
-        self.run_in_target('adduser', user, 'admin')
+        if user:
+            uid  = self.context.get_setting('uid')
+            name = self.context.get_setting('name')
 
-        self.install_from_template('/etc/sudoers', 'sudoers')
-        for group in ['adm', 'audio', 'cdrom', 'dialout', 'floppy', 'video', 'plugdev', 'dip', 'netdev', 'powerdev', 'lpadmin', 'scanner']:
-            self.run_in_target('adduser', user, group, ignore_fail=True)
+            if uid:
+                self.run_in_target('adduser', '--disabled-password', '--uid', uid, '--gecos', name, user)
+            else:
+                self.run_in_target('adduser', '--disabled-password', '--gecos', name, user)
 
-        self.update_passwords()
+            self.run_in_target('addgroup', '--system', 'admin')
+            self.run_in_target('adduser', user, 'admin')
+
+            self.install_from_template('/etc/sudoers', 'sudoers')
+            for group in ['adm', 'audio', 'cdrom', 'dialout', 'floppy', 'video', 'plugdev', 'dip', 'netdev', 'powerdev', 'lpadmin', 'scanner']:
+                self.run_in_target('adduser', user, group, ignore_fail=True)
+
+            self.update_passwords()
 
     def kernel_name(self):
         flavour = self.context.get_setting('flavour')
