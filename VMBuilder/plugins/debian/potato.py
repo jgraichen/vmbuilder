@@ -258,7 +258,7 @@ class Potato(suite.Suite):
 
     def debootstrap(self):
         arch = self.context.get_setting('arch')
-        cmd = ['/usr/sbin/debootstrap', '--arch=%s' % arch]
+        cmd = ['/usr/sbin/debootstrap', '--include=locales', '--arch=%s' % arch]
 
         variant = self.context.get_setting('variant')
         if variant:
